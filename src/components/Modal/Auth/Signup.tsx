@@ -2,6 +2,9 @@ import { Button, Flex, Input, Text } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { useSetRecoilState } from 'recoil';
 import { authModalState } from '../../../atoms/authModalAtom';
+import { useCreateUserWithEmailAndPassword, useUpdateProfile } from "react-firebase-hooks/auth"
+import { auth } from "../../../firebase/clientApp"
+import { FIREBASE_ERROR } from "../../../firebase/firebaseError"
 
 type SignupProps = {
   
@@ -15,16 +18,32 @@ const Signup:React.FC<SignupProps> = () => {
     confirmPassword: "",
     username: ""
   })
+  const [error, setError] = useState("")
+  const [updateProfile, updating, errorProfile] = useUpdateProfile(auth);
+  const [
+    createUserWithEmailAndPassword,
+    user,
+    loading,
+    userError,
+  ] = useCreateUserWithEmailAndPassword(auth);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSignupForm((prev) => ({
       ...prev,
-      [e.target.name]: [e.target.value]
+      [e.target.name]: e.target.value
     }))
   }
 
-  const onSubmit = () => {
-
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const { password, confirmPassword, username } = signupForm
+    console.log(password, confirmPassword)
+    if(password !== confirmPassword) {
+      setError("Password do not match")
+      return
+    }
+    await createUserWithEmailAndPassword(signupForm.email, signupForm.password)
+    await updateProfile({displayName: username, photoURL: "" })
   }
   
   return (
@@ -117,12 +136,14 @@ const Signup:React.FC<SignupProps> = () => {
         }}
         bg="gray.50"
       />
+      <Text textAlign="center" color="red" fontSize="10pt">{error || FIREBASE_ERROR[userError?.message as keyof typeof FIREBASE_ERROR]}</Text>
       <Button
         type="submit"
         width="100%"
         height="36px"
         mt={2}
         mb={2}
+        isLoading={loading}
       >
         Sign Up
       </Button>
