@@ -9,8 +9,10 @@ import {
   Icon
 } from "@chakra-ui/react";
 import { TiHome } from "react-icons/ti"
+import Communities from "./Communities";
 
 const UserMenu: React.FC = () => {
+  // VIDEO 1:14:45
   return (
     <Menu>
       <MenuButton
@@ -44,7 +46,7 @@ const UserMenu: React.FC = () => {
         </Flex>
       </MenuButton>
       <MenuList>
-        {/* <Communities /> */}
+        <Communities />
       </MenuList>
     </Menu>
   )
