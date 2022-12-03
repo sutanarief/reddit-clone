@@ -1,10 +1,12 @@
 import { Button, Flex, Input, Text } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSetRecoilState } from 'recoil';
 import { authModalState } from '../../../atoms/authModalAtom';
 import { useCreateUserWithEmailAndPassword, useUpdateProfile } from "react-firebase-hooks/auth"
-import { auth } from "../../../firebase/clientApp"
+import { auth, firestore } from "../../../firebase/clientApp"
 import { FIREBASE_ERROR } from "../../../firebase/firebaseError"
+import { collection, doc, setDoc } from 'firebase/firestore';
+import { User } from 'firebase/auth';
 
 type SignupProps = {
   
@@ -22,7 +24,7 @@ const Signup:React.FC<SignupProps> = () => {
   const [updateProfile, updating, errorProfile] = useUpdateProfile(auth);
   const [
     createUserWithEmailAndPassword,
-    user,
+    userCred,
     loading,
     userError,
   ] = useCreateUserWithEmailAndPassword(auth);
@@ -45,6 +47,17 @@ const Signup:React.FC<SignupProps> = () => {
     await createUserWithEmailAndPassword(signupForm.email, signupForm.password)
     await updateProfile({displayName: username, photoURL: "" })
   }
+
+  const createUserDocument = async (user: User) => {
+    const userDocRef = doc(firestore, "users", user.uid)
+    await setDoc(userDocRef, JSON.parse(JSON.stringify(user)))
+  }
+
+  useEffect(() => {
+    if(userCred) {
+      createUserDocument(userCred.user)
+    }
+  }, [userCred])
   
   return (
     <form onSubmit={onSubmit}>
