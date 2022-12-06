@@ -1,6 +1,7 @@
 import { Flex, Image } from '@chakra-ui/react';
 import React from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { useRouter } from 'next/router';
 import { auth } from '../../firebase/clientApp';
 import RightContent from './RightContent/RightContent';
 import SearchInput from './SearchInput';
@@ -8,6 +9,7 @@ import Directory from './Directory/Directory'
 
 const Navbar:React.FC = () => {
   const [user, loading, error] = useAuthState(auth)
+  const router = useRouter()
   return (
     <Flex 
       bg="white" 
@@ -19,6 +21,8 @@ const Navbar:React.FC = () => {
         align="center" 
         width={{ base: "40px", md: "auto" }}
         mr={{ base: 0, md: 2 }}
+        cursor="pointer"
+        onClick={() => router.push('/')}
       >
         <Image src="/images/redditFace.svg" height="30px"/>
         <Image
