@@ -12,9 +12,11 @@ import { Post } from '../../atoms/postsAtom';
 import { addDoc, collection, serverTimestamp, Timestamp, updateDoc } from 'firebase/firestore';
 import { firestore, storage } from '../../firebase/clientApp';
 import { getDownloadURL, ref, uploadString } from 'firebase/storage';
+import useSelectFile from '../../hooks/useSelectFile';
 
 type NewPostFormProps = {
   user: User
+  communityImageURL?: string
 };
 
 const formTabs = [
@@ -40,24 +42,20 @@ const formTabs = [
   }
 ]
 
-export type TabItem = {
-  title: string,
-  icon: typeof Icon.arguments
-}
-
-const NewPostForm:React.FC<NewPostFormProps> = ({ user }) => {
+const NewPostForm:React.FC<NewPostFormProps> = ({ user, communityImageURL }) => {
   const router = useRouter()
   const [selectedTab, setSelectedTab] = useState(formTabs[0].title)
   const [textInputs, setTextInputs] = useState({ title: "", body: ""})
-  const [selectedFile, setSelectedFIle] = useState<string>()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
+  const { selectedFile, setSelectedFile, onSelectFile } = useSelectFile()
 
   const handleCreatePost = async () => {
     const { communityId } = router.query
 
     const newPost: Post = {
       communityId: communityId as string,
+      communityImageURL: communityImageURL || "",
       creatorId: user.uid,
       creatorDisplayName: user.displayName || user.email!.split("@")[0],
       title: textInputs.title,
@@ -77,32 +75,20 @@ const NewPostForm:React.FC<NewPostFormProps> = ({ user }) => {
         // store in storage => getDownloadURL (return imageURL)
         const imageRef = ref(storage, `posts/${postDocRef.id}/image`)
         await uploadString(imageRef, selectedFile, "data_url")
-        const downloadUrl = await getDownloadURL(imageRef)
+        const downloadURL = await getDownloadURL(imageRef)
 
-        // update post doc by adding imageUrl 
+        // update post doc by adding imageURL 
         await updateDoc(postDocRef, {
-          imageUrl: downloadUrl
+          imageURL: downloadURL
         })
       }
+
+      router.back()
     } catch (error: any) {
       console.log("handleCreatePost error", error.message)
       setError(true)
     }
     setLoading(false)
-  }
-
-  const onSelectImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const reader = new FileReader()
-    
-    if(e.target.files?.[0]) {
-      reader.readAsDataURL(e.target.files[0])
-    } 
-
-    reader.onload = (readerEvent) => {
-      if(readerEvent.target?.result) {
-        setSelectedFIle(readerEvent.target.result as string )
-      }
-    }
   }
 
   const onTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -119,7 +105,7 @@ const NewPostForm:React.FC<NewPostFormProps> = ({ user }) => {
       <Flex width="100%">
         {formTabs.map((item, index) => (
           <>
-            <TabItem item={item} selected={item.title === selectedTab} setSelectedTab={setSelectedTab} />
+            <TabItem key={index} item={item} selected={item.title === selectedTab} setSelectedTab={setSelectedTab} />
           </>
         ))}
       </Flex>
@@ -135,9 +121,9 @@ const NewPostForm:React.FC<NewPostFormProps> = ({ user }) => {
           {selectedTab === "Image & Video" && (
             <ImageUpload
               selectedFile={selectedFile}
-              onSelectImage={onSelectImage}
+              onSelectImage={onSelectFile}
               setSelectedTab={setSelectedTab}
-              setSelectedFile={setSelectedFIle}
+              setSelectedFile={setSelectedFile}
             />
           )}
         </Flex>

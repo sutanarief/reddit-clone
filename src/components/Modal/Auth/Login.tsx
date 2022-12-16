@@ -31,10 +31,14 @@ const Login:React.FC<LoginProps> = () => {
     }))
   }
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const { email, password } = loginForm
-    signInWithEmailAndPassword(email, password)
+    try {
+      const { email, password } = loginForm
+      await signInWithEmailAndPassword(email, password)
+    } catch (error: any) {
+      console.log("Login Error", error.message)
+    }
   }
   
   return (
@@ -90,6 +94,7 @@ const Login:React.FC<LoginProps> = () => {
         height="36px"
         mt={2}
         mb={2}
+        isLoading={loading}
       >
         Log In
       </Button>
