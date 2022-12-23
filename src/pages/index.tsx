@@ -15,6 +15,7 @@ import PostLoader from '../components/Post/PostLoader'
 import { auth, firestore } from '../firebase/clientApp'
 import useCommunityData from '../hooks/useCommunityData'
 import usePosts from '../hooks/usePosts'
+import Head from 'next/head'
 
 const Home: NextPage = () => {
   const [user, loadingUser] = useAuthState(auth)
@@ -122,36 +123,42 @@ const Home: NextPage = () => {
   },[user, postStateValue.posts])
 
   return (
-    <PageContent>
-      <>
-        <CreatePostLink/>
-        {loading ? (
-          <PostLoader />
-        ) : (
-          <Stack>
-            {postStateValue.posts.map(post => (
-              <PostItem
-                key={post.id}
-                post={post}
-                onSelectPost={onSelectPost}
-                onDeletePost={onDeletePost}
-                onVote={onVote}
-                userVoteValue={postStateValue.postVotes.find(
-                  item => item.postId === post.id
-                )?.voteValue}
-                userIsCreator={user?.uid === post.creatorId}
-                homePage
-              />
-            ))}
-          </Stack>
-        )}
-      </>
-      <Stack spacing={5}>
-        <Recommendation/>
-        <Premium />
-        <PersonalHome />
-      </Stack>
-    </PageContent>
+    <>
+      <Head>
+        <title>{ user ? "Home" : "Reddit - Dive into anything" }</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
+      <PageContent>
+        <>
+          <CreatePostLink/>
+          {loading ? (
+            <PostLoader />
+          ) : (
+            <Stack>
+              {postStateValue.posts.map(post => (
+                <PostItem
+                  key={post.id}
+                  post={post}
+                  onSelectPost={onSelectPost}
+                  onDeletePost={onDeletePost}
+                  onVote={onVote}
+                  userVoteValue={postStateValue.postVotes.find(
+                    item => item.postId === post.id
+                  )?.voteValue}
+                  userIsCreator={user?.uid === post.creatorId}
+                  homePage
+                />
+              ))}
+            </Stack>
+          )}
+        </>
+        <Stack spacing={5}>
+          <Recommendation/>
+          <Premium />
+          <PersonalHome />
+        </Stack>
+      </PageContent>
+    </>
   )
 }
 

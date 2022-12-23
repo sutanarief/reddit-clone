@@ -11,6 +11,7 @@ import CreatePostLink from '../../../components/Community/CreatePostLink';
 import Post from '../../../components/Post/Posts';
 import { useSetRecoilState } from 'recoil';
 import About from '../../../components/Community/About';
+import Head from 'next/head'
 
 type CommunityPageProps = {
   communityData: Community
@@ -32,6 +33,10 @@ const CommunityPage:React.FC<CommunityPageProps> = ({ communityData }) => {
   
   return (
     <>
+      <Head>
+        <title>r/{communityData.id}</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
       <Header communityData={communityData} />
       <PageContent>
         <>
